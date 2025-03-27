@@ -8,6 +8,7 @@ dotenv.config();
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
 const FILE_PATH = "./data/signals.json";
+
 const APP = express();
 
 async function sendTelegramMessage({ BOT_TOKEN, CHAT_ID, message }) {
