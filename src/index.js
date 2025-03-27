@@ -186,7 +186,15 @@ ${randomSymbol};${times.expiration};${type === "PUT" ? "PUT 🟥" : "CALL 🟩"}
 	}
 }
 
-APP.get("/run-bot", async (req, res) => {
+APP.get("/", (_, res) => {
+    res.send("🚀 Bot rodando!");
+});
+
+APP.get("/health", (_, res) => {
+    res.send("👍 Tudo certo!");
+});
+
+APP.get("/run-bot", async (_, res) => {
 	try {
 		await main();
 		res.send("✅ Bot executado com sucesso!");
