@@ -13,180 +13,183 @@ const CHAT_ID = process.env.CHAT_ID;
 
 const FILE_PATH = "./data/signals.json";
 
-async function sendTelegramMessage(message) {
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-
-    await axios.post(url, {
-      chat_id: CHAT_ID,
-      text: message,
-      parse_mode: "Markdown",
-    });
-  }
+BOT.on("message", (msg) => {
+    console.log(msg.chat.id);
+  });
   
 
-async function getAllSymbols() {
-	try {
-		const response = await axios.get(
-			"https://api.binance.com/api/v3/exchangeInfo",
-		);
+// async function sendTelegramMessage(message) {
+// 	const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-		const symbols = response.data.symbols
-			.filter((s) => s.status === "TRADING")
-			.map((s) => s.symbol);
-		return symbols;
-	} catch (error) {
-		console.error("❌ Erro ao buscar os pares:", error);
-		return [];
-	}
-}
+// 	await axios.post(url, {
+// 		chat_id: CHAT_ID,
+// 		text: message,
+// 		parse_mode: "Markdown",
+// 	});
+// }
 
-async function checkWinOrGale() {
-	if (!fs.existsSync(FILE_PATH)) return;
+// async function getAllSymbols() {
+// 	try {
+// 		const response = await axios.get(
+// 			"https://api.binance.com/api/v3/exchangeInfo",
+// 		);
 
-	const signals = JSON.parse(fs.readFileSync(FILE_PATH, "utf8"));
-	const lastSignal = signals[signals.length - 1];
-	if (!lastSignal) return;
+// 		const symbols = response.data.symbols
+// 			.filter((s) => s.status === "TRADING")
+// 			.map((s) => s.symbol);
+// 		return symbols;
+// 	} catch (error) {
+// 		console.error("❌ Erro ao buscar os pares:", error);
+// 		return [];
+// 	}
+// }
 
-	const currentPrice = await getPrice();
+// async function checkWinOrGale() {
+// 	if (!fs.existsSync(FILE_PATH)) return;
 
-	if (!currentPrice) return;
+// 	const signals = JSON.parse(fs.readFileSync(FILE_PATH, "utf8"));
+// 	const lastSignal = signals[signals.length - 1];
+// 	if (!lastSignal) return;
 
-	let winMessage = null;
+// 	const currentPrice = await getPrice();
 
-	if (lastSignal.type === "PUT" && currentPrice < lastSignal.price) {
-		winMessage = "✅ *WIN direto!* 🟢";
-	} else if (lastSignal.type === "CALL" && currentPrice > lastSignal.price) {
-		winMessage = "✅ *WIN direto!* 🟢";
-	} else if (
-		lastSignal.gale1 &&
-		lastSignal.gale1.type === "PUT" &&
-		currentPrice < lastSignal.gale1.price
-	) {
-		winMessage = "✅ *WIN no 1º GALE!* 🔵";
-	} else if (
-		lastSignal.gale1 &&
-		lastSignal.gale1.type === "CALL" &&
-		currentPrice > lastSignal.gale1.price
-	) {
-		winMessage = "✅ *WIN no 1º GALE!* 🔵";
-	} else if (
-		lastSignal.gale2 &&
-		lastSignal.gale2.type === "PUT" &&
-		currentPrice < lastSignal.gale2.price
-	) {
-		winMessage = "✅ *WIN no 2º GALE!* 🔴";
-	} else if (
-		lastSignal.gale2 &&
-		lastSignal.gale2.type === "CALL" &&
-		currentPrice > lastSignal.gale2.price
-	) {
-		winMessage = "✅ *WIN no 2º GALE!* 🔴";
-	}
+// 	if (!currentPrice) return;
 
-	if (winMessage) {
-		await sendTelegramMessage(winMessage);
-		console.log(winMessage);
-	}
-}
+// 	let winMessage = null;
 
-async function getPrice(symbol) {
-	try {
-		const response = await axios.get(
-			`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
-		);
-		return response.data.price;
-	} catch (error) {
-		console.error(`❌ Erro ao buscar preço do par ${symbol}:`, error);
-		return null;
-	}
-}
+// 	if (lastSignal.type === "PUT" && currentPrice < lastSignal.price) {
+// 		winMessage = "✅ *WIN direto!* 🟢";
+// 	} else if (lastSignal.type === "CALL" && currentPrice > lastSignal.price) {
+// 		winMessage = "✅ *WIN direto!* 🟢";
+// 	} else if (
+// 		lastSignal.gale1 &&
+// 		lastSignal.gale1.type === "PUT" &&
+// 		currentPrice < lastSignal.gale1.price
+// 	) {
+// 		winMessage = "✅ *WIN no 1º GALE!* 🔵";
+// 	} else if (
+// 		lastSignal.gale1 &&
+// 		lastSignal.gale1.type === "CALL" &&
+// 		currentPrice > lastSignal.gale1.price
+// 	) {
+// 		winMessage = "✅ *WIN no 1º GALE!* 🔵";
+// 	} else if (
+// 		lastSignal.gale2 &&
+// 		lastSignal.gale2.type === "PUT" &&
+// 		currentPrice < lastSignal.gale2.price
+// 	) {
+// 		winMessage = "✅ *WIN no 2º GALE!* 🔴";
+// 	} else if (
+// 		lastSignal.gale2 &&
+// 		lastSignal.gale2.type === "CALL" &&
+// 		currentPrice > lastSignal.gale2.price
+// 	) {
+// 		winMessage = "✅ *WIN no 2º GALE!* 🔴";
+// 	}
 
-function generateExpirationTimes() {
-	const now = new Date();
+// 	if (winMessage) {
+// 		await sendTelegramMessage(winMessage);
+// 		console.log(winMessage);
+// 	}
+// }
 
-	function formatTime(date) {
-		return date.toTimeString().split(" ")[0].substring(0, 5);
-	}
+// async function getPrice(symbol) {
+// 	try {
+// 		const response = await axios.get(
+// 			`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
+// 		);
+// 		return response.data.price;
+// 	} catch (error) {
+// 		console.error(`❌ Erro ao buscar preço do par ${symbol}:`, error);
+// 		return null;
+// 	}
+// }
 
-	const expiration = new Date(now.getTime() + 5 * 60000);
-	const gale1 = new Date(expiration.getTime() + 5 * 60000);
-	const gale2 = new Date(gale1.getTime() + 5 * 60000);
+// function generateExpirationTimes() {
+// 	const now = new Date();
 
-	return {
-		expiration: formatTime(expiration),
-		gale1: formatTime(gale1),
-		gale2: formatTime(gale2),
-	};
-}
+// 	function formatTime(date) {
+// 		return date.toTimeString().split(" ")[0].substring(0, 5);
+// 	}
 
-async function sendTradeSignal() {
-	try {
-		const symbols = await getAllSymbols();
+// 	const expiration = new Date(now.getTime() + 5 * 60000);
+// 	const gale1 = new Date(expiration.getTime() + 5 * 60000);
+// 	const gale2 = new Date(gale1.getTime() + 5 * 60000);
 
-		if (symbols.length === 0) return;
+// 	return {
+// 		expiration: formatTime(expiration),
+// 		gale1: formatTime(gale1),
+// 		gale2: formatTime(gale2),
+// 	};
+// }
 
-		const type = Math.random() > 0.5 ? "PUT" : "CALL";
+// async function sendTradeSignal() {
+// 	try {
+// 		const symbols = await getAllSymbols();
 
-		const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+// 		if (symbols.length === 0) return;
 
-		const price = await getPrice(randomSymbol);
+// 		const type = Math.random() > 0.5 ? "PUT" : "CALL";
 
-		if (!price) return;
+// 		const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
 
-		const times = generateExpirationTimes();
+// 		const price = await getPrice(randomSymbol);
 
-		const signal = {
-			symbol: randomSymbol,
-			price: price,
-			type,
-			expiration: times.expiration,
-			gale1: {
-				price: price * (type === "PUT" ? 1.002 : 0.998),
-				type,
-			},
-			gale2: {
-				price: price * (type === "PUT" ? 1.004 : 0.996),
-				type,
-			},
-		};
+// 		if (!price) return;
 
+// 		const times = generateExpirationTimes();
 
-		let signals = [];
+// 		const signal = {
+// 			symbol: randomSymbol,
+// 			price: price,
+// 			type,
+// 			expiration: times.expiration,
+// 			gale1: {
+// 				price: price * (type === "PUT" ? 1.002 : 0.998),
+// 				type,
+// 			},
+// 			gale2: {
+// 				price: price * (type === "PUT" ? 1.004 : 0.996),
+// 				type,
+// 			},
+// 		};
 
-		if (fs.existsSync(FILE_PATH)) {
-			signals = JSON.parse(fs.readFileSync(FILE_PATH, "utf8"));
-		}
+// 		let signals = [];
 
-		signals.push(signal);
+// 		if (fs.existsSync(FILE_PATH)) {
+// 			signals = JSON.parse(fs.readFileSync(FILE_PATH, "utf8"));
+// 		}
 
-		fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+// 		signals.push(signal);
 
-		const message = `
-  💰 *5 minutos de expiração*
-  ${randomSymbol};${times.expiration};PUT 🟥
+// 		fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+
+// 		const message = `
+//   💰 *5 minutos de expiração*
+//   ${randomSymbol};${times.expiration};PUT 🟥
   
-  🕐 *TEMPO PARA ${times.expiration}*
+//   🕐 *TEMPO PARA ${times.expiration}*
   
-  1º GALE — TEMPO PARA ${times.gale1}
-  2º GALE — TEMPO PARA ${times.gale2}
+//   1º GALE — TEMPO PARA ${times.gale1}
+//   2º GALE — TEMPO PARA ${times.gale2}
   
-  📲 [Clique para abrir a corretora](https://www.binance.com)
-  🙋‍♂️ [Não sabe operar ainda? Clique aqui](https://t.me/seu_grupo_aqui)
-      `;
+//   📲 [Clique para abrir a corretora](https://www.binance.com)
+//   🙋‍♂️ [Não sabe operar ainda? Clique aqui](https://t.me/seu_grupo_aqui)
+//       `;
 
-		BOT.sendMessage(CHAT_ID, message, {
-			parse_mode: "Markdown",
-			disable_web_page_preview: true,
-		});
-		console.log("📨 Sinal enviado com sucesso!");
-	} catch (error) {
-		console.error("❌ Erro ao gerar o sinal de trade:", error);
-	}
-}
+// 		BOT.sendMessage(CHAT_ID, message, {
+// 			parse_mode: "Markdown",
+// 			disable_web_page_preview: true,
+// 		});
+// 		console.log("📨 Sinal enviado com sucesso!");
+// 	} catch (error) {
+// 		console.error("❌ Erro ao gerar o sinal de trade:", error);
+// 	}
+// }
 
-(async () => {
-	await checkWinOrGale();
-	await sendTradeSignal();
-})();
+// (async () => {
+// 	await checkWinOrGale();
+// 	await sendTradeSignal();
+// })();
 
-console.log("Bot rodando...");
+// console.log("Bot rodando...");
