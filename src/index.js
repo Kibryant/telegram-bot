@@ -186,6 +186,11 @@ ${randomSymbol};${times.expiration};${type === "PUT" ? "PUT 🟥" : "CALL 🟩"}
 	}
 }
 
+async function main() {
+    await sendTradeSignal();
+    await checkWinOrGale();
+}
+
 APP.get("/", (_, res) => {
     res.send("🚀 Bot rodando!");
 });
