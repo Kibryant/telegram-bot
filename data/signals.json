@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "symbol": "VIDTUSDT",
+    "price": "0.01388000",
+    "type": "PUT",
+    "expiration": "16:48",
+    "gale1": {
+      "price": 0.01390776,
+      "type": "PUT",
+      "expiration": "16:53"
+    },
+    "gale2": {
+      "price": 0.01393552,
+      "type": "PUT",
+      "expiration": "16:58"
+    }
+  },
+  {
+    "symbol": "NTRNBNB",
+    "price": "0.00023800",
+    "type": "PUT",
+    "expiration": "16:55",
+    "gale1": {
+      "price": 0.00023847600000000003,
+      "type": "PUT",
+      "expiration": "17:00"
+    },
+    "gale2": {
+      "price": 0.000238952,
+      "type": "PUT",
+      "expiration": "17:05"
+    }
+  }
+]

@@ -41,56 +41,104 @@ async function checkWinOrGale() {
 	if (!fs.existsSync(FILE_PATH)) return;
 
 	const signals = JSON.parse(fs.readFileSync(FILE_PATH, "utf8"));
+	if (signals.length === 0) return;
+
 	const lastSignal = signals[signals.length - 1];
-	if (!lastSignal) return;
-
 	const currentPrice = await getPrice(lastSignal.symbol);
-
 	if (!currentPrice) return;
 
-	let winMessage = null;
-
-	if (lastSignal.type === "PUT" && currentPrice < lastSignal.price) {
-		winMessage = "✅ *WIN direto!* 🟢";
-	} else if (lastSignal.type === "CALL" && currentPrice > lastSignal.price) {
-		winMessage = "✅ *WIN direto!* 🟢";
-	} else if (
-		lastSignal.gale1 &&
-		lastSignal.gale1.type === "PUT" &&
-		currentPrice < lastSignal.gale1.price
+	if (
+		(lastSignal.type === "PUT" && currentPrice < lastSignal.price) ||
+		(lastSignal.type === "CALL" && currentPrice > lastSignal.price)
 	) {
-		winMessage = "✅ *WIN no 1º GALE!* 🔵";
-	} else if (
-		lastSignal.gale1 &&
-		lastSignal.gale1.type === "CALL" &&
-		currentPrice > lastSignal.gale1.price
-	) {
-		winMessage = "✅ *WIN no 1º GALE!* 🔵";
-	} else if (
-		lastSignal.gale2 &&
-		lastSignal.gale2.type === "PUT" &&
-		currentPrice < lastSignal.gale2.price
-	) {
-		winMessage = "✅ *WIN no 2º GALE!* 🔴";
-	} else if (
-		lastSignal.gale2 &&
-		lastSignal.gale2.type === "CALL" &&
-		currentPrice > lastSignal.gale2.price
-	) {
-		winMessage = "✅ *WIN no 2º GALE!* 🔴";
-	}
-
-	if (winMessage) {
 		await sendTelegramMessage({
 			BOT_TOKEN,
 			CHAT_ID,
-			message: winMessage,
+			message: "✅ *WIN direto!* 🟢",
 		});
+		signals.pop();
+		fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+		return;
+	}
 
-		console.log(winMessage);
+	if (lastSignal.gale1) {
+		const gale1Expired =
+			new Date() >
+			new Date(
+				`${new Date().toISOString().split("T")[0]} ${lastSignal.gale1.expiration}:00`,
+			);
+
+		if (
+			!gale1Expired &&
+			((lastSignal.gale1.type === "PUT" &&
+				currentPrice < lastSignal.gale1.price) ||
+				(lastSignal.gale1.type === "CALL" &&
+					currentPrice > lastSignal.gale1.price))
+		) {
+			await sendTelegramMessage({
+				BOT_TOKEN,
+				CHAT_ID,
+				message: "✅ *WIN no 1º GALE!* 🔵",
+			});
+			signals.pop();
+			fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+			return;
+		}
+	}
+
+	if (lastSignal.gale2) {
+		const gale2Expired =
+			new Date() >
+			new Date(
+				`${new Date().toISOString().split("T")[0]} ${lastSignal.gale2.expiration}:00`,
+			);
+
+		if (
+			!gale2Expired &&
+			((lastSignal.gale2.type === "PUT" &&
+				currentPrice < lastSignal.gale2.price) ||
+				(lastSignal.gale2.type === "CALL" &&
+					currentPrice > lastSignal.gale2.price))
+		) {
+			await sendTelegramMessage({
+				BOT_TOKEN,
+				CHAT_ID,
+				message: "✅ *WIN no 2º GALE!* 🔴",
+			});
+			signals.pop();
+			fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+			return;
+		}
+	}
+
+	const signalExpired =
+		new Date() >
+		new Date(
+			`${new Date().toISOString().split("T")[0]} ${lastSignal.expiration}:00`,
+		);
+	const gale1Expired = lastSignal.gale1
+		? new Date() >
+			new Date(
+				`${new Date().toISOString().split("T")[0]} ${lastSignal.gale1.expiration}:00`,
+			)
+		: true;
+	const gale2Expired = lastSignal.gale2
+		? new Date() >
+			new Date(
+				`${new Date().toISOString().split("T")[0]} ${lastSignal.gale2.expiration}:00`,
+			)
+		: true;
+
+	if (signalExpired && gale1Expired && gale2Expired) {
+		await sendTelegramMessage({
+			BOT_TOKEN,
+			CHAT_ID,
+			message: "❌ *LOSS!* 🔴",
+		});
+		signals.pop();
+		fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
 	}
 }
-
 async function getPrice(symbol) {
 	try {
 		const response = await axios.get(
@@ -103,12 +151,18 @@ async function getPrice(symbol) {
 	}
 }
 
+function formatTime(date) {
+	const options = { timeZone: "America/Sao_Paulo", hour12: false };
+
+	return new Intl.DateTimeFormat("pt-BR", {
+		...options,
+		hour: "2-digit",
+		minute: "2-digit",
+	}).format(date);
+}
+
 function generateExpirationTimes() {
 	const now = new Date();
-
-	function formatTime(date) {
-		return date.toTimeString().split(" ")[0].substring(0, 5);
-	}
 
 	const expiration = new Date(now.getTime() + 5 * 60000);
 	const gale1 = new Date(expiration.getTime() + 5 * 60000);
@@ -145,10 +199,12 @@ async function sendTradeSignal() {
 			gale1: {
 				price: price * (type === "PUT" ? 1.002 : 0.998),
 				type,
+				expiration: times.gale1,
 			},
 			gale2: {
 				price: price * (type === "PUT" ? 1.004 : 0.996),
 				type,
+				expiration: times.gale2,
 			},
 		};
 
@@ -187,26 +243,31 @@ ${randomSymbol};${times.expiration};${type === "PUT" ? "PUT 🟥" : "CALL 🟩"}
 	}
 }
 
-async function main() {
-    await sendTradeSignal();
-    await checkWinOrGale();
-}
-
 APP.get("/", (_, res) => {
-    res.send("🚀 Bot rodando!");
+	res.send("🚀 Bot rodando!");
 });
 
 APP.get("/health", (_, res) => {
-    res.send("👍 Tudo certo!");
+	res.send("👍 Tudo certo!");
 });
 
-APP.get("/run-bot", async (_, res) => {
+APP.get("/send-signal", async (_, res) => {
 	try {
-		await main();
-		res.send("✅ Bot executado com sucesso!");
+		await sendTradeSignal();
+		res.send("✅ Sinal enviado com sucesso!");
 	} catch (error) {
-		console.error("❌ Erro ao executar bot:", error);
-		res.status(500).send("Erro ao executar bot.");
+		console.error("❌ Erro ao enviar sinal:", error);
+		res.status(500).send("Erro ao enviar sinal.");
+	}
+});
+
+APP.get("/check-win-or-gale", async (_, res) => {
+	try {
+		await checkWinOrGale();
+		res.send("✅ Verificação de win ou gale concluída!");
+	} catch (error) {
+		console.error("❌ Erro ao verificar win ou gale:", error);
+		res.status(500).send("Erro ao verificar win ou gale.");
 	}
 });
 
