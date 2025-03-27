@@ -11,16 +11,7 @@ const FILE_PATH = "./data/signals.json";
 
 const APP = express();
 
-async function fetchWithProxy(url) {
-	try {
-		const response = await axios.get("https://proxy-list.org/api/proxy", {
-			params: { url },
-		});
-		return response.data;
-	} catch (error) {
-		console.error("Erro ao usar proxy:", error);
-	}
-}
+
 
 async function sendTelegramMessage({ BOT_TOKEN, CHAT_ID, message }) {
 	const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -34,7 +25,7 @@ async function sendTelegramMessage({ BOT_TOKEN, CHAT_ID, message }) {
 
 async function getAllSymbols() {
 	try {
-		const response = fetchWithProxy(
+		const response = await axios.get(
 			"https://api.binance.com/api/v3/exchangeInfo",
 		);
 
@@ -104,7 +95,7 @@ async function checkWinOrGale() {
 
 async function getPrice(symbol) {
 	try {
-		const response = fetchWithProxy(
+		const response = await axios.get(
 			`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
 		);
 		return response.data.price;
@@ -199,16 +190,16 @@ ${randomSymbol};${times.expiration};${type === "PUT" ? "PUT 🟥" : "CALL 🟩"}
 }
 
 async function main() {
-	await sendTradeSignal();
-	await checkWinOrGale();
+    await sendTradeSignal();
+    await checkWinOrGale();
 }
 
 APP.get("/", (_, res) => {
-	res.send("🚀 Bot rodando!");
+    res.send("🚀 Bot rodando!");
 });
 
 APP.get("/health", (_, res) => {
-	res.send("👍 Tudo certo!");
+    res.send("👍 Tudo certo!");
 });
 
 APP.get("/run-bot", async (_, res) => {
