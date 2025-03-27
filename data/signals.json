@@ -1,0 +1,114 @@
+[
+  {
+    "symbol": "COSTRY",
+    "price": "0.14950000",
+    "type": "CALL",
+    "expiration": "08:28",
+    "gale1": {
+      "price": 0.149201,
+      "type": "CALL"
+    },
+    "gale2": {
+      "price": 0.148902,
+      "type": "CALL"
+    }
+  },
+  {
+    "symbol": "USDTRON",
+    "price": "4.57900000",
+    "type": "CALL",
+    "expiration": "08:28",
+    "gale1": {
+      "price": 4.5698419999999995,
+      "type": "CALL"
+    },
+    "gale2": {
+      "price": 4.560683999999999,
+      "type": "CALL"
+    }
+  },
+  {
+    "symbol": "1MBABYDOGEUSDT",
+    "price": "0.00139130",
+    "type": "PUT",
+    "expiration": "08:29",
+    "gale1": {
+      "price": 0.0013940826,
+      "type": "PUT"
+    },
+    "gale2": {
+      "price": 0.0013968652,
+      "type": "PUT"
+    }
+  },
+  {
+    "symbol": "LRCETH",
+    "price": "0.00005450",
+    "type": "CALL",
+    "expiration": "08:29",
+    "gale1": {
+      "price": 0.000054391,
+      "type": "CALL"
+    },
+    "gale2": {
+      "price": 0.000054282000000000006,
+      "type": "CALL"
+    }
+  },
+  {
+    "symbol": "TNSRFDUSD",
+    "price": "0.20740000",
+    "type": "CALL",
+    "expiration": "08:30",
+    "gale1": {
+      "price": 0.2069852,
+      "type": "CALL"
+    },
+    "gale2": {
+      "price": 0.2065704,
+      "type": "CALL"
+    }
+  },
+  {
+    "symbol": "JUPUSDC",
+    "price": "0.54210000",
+    "type": "PUT",
+    "expiration": "08:33",
+    "gale1": {
+      "price": 0.5431842,
+      "type": "PUT"
+    },
+    "gale2": {
+      "price": 0.5442684,
+      "type": "PUT"
+    }
+  },
+  {
+    "symbol": "NEARBTC",
+    "price": "0.00003433",
+    "type": "CALL",
+    "expiration": "08:35",
+    "gale1": {
+      "price": 0.00003426134,
+      "type": "CALL"
+    },
+    "gale2": {
+      "price": 0.00003419268,
+      "type": "CALL"
+    }
+  },
+  {
+    "symbol": "AIXBTUSDT",
+    "price": "0.12530000",
+    "type": "PUT",
+    "expiration": "08:38",
+    "gale1": {
+      "price": 0.12555059999999998,
+      "type": "PUT"
+    },
+    "gale2": {
+      "price": 0.1258012,
+      "type": "PUT"
+    }
+  }
+]
