@@ -1,5 +1,4 @@
 import axios from "axios";
-import fs from "node:fs";
 import dotenv from "dotenv";
 import express from "express";
 
@@ -7,13 +6,11 @@ dotenv.config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
-const FILE_PATH = "./data/signals.json";
-
 const APP = express();
+let LAST_SIGNAL = null; // Agora vamos usar essa variável para armazenar o último sinal
 
 async function sendTelegramMessage({ BOT_TOKEN, CHAT_ID, message }) {
 	const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-
 	await axios.post(url, {
 		chat_id: CHAT_ID,
 		text: message,
@@ -26,7 +23,6 @@ async function getAllSymbols() {
 		const response = await axios.get(
 			"https://data-api.binance.vision/api/v3/exchangeInfo",
 		);
-
 		const symbols = response.data.symbols
 			.filter((s) => s.status === "TRADING")
 			.map((s) => s.symbol);
@@ -38,12 +34,9 @@ async function getAllSymbols() {
 }
 
 async function checkWinOrGale() {
-	if (!fs.existsSync(FILE_PATH)) return;
+	if (!LAST_SIGNAL) return;
 
-	const signals = JSON.parse(fs.readFileSync(FILE_PATH, "utf8"));
-	if (signals.length === 0) return;
-
-	const lastSignal = signals[signals.length - 1];
+	const lastSignal = LAST_SIGNAL;
 	const currentPrice = await getPrice(lastSignal.symbol);
 	if (!currentPrice) return;
 
@@ -56,8 +49,7 @@ async function checkWinOrGale() {
 			CHAT_ID,
 			message: "✅ *WIN direto!* 🟢",
 		});
-		signals.pop();
-		fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+		LAST_SIGNAL = null;
 		return;
 	}
 
@@ -80,8 +72,7 @@ async function checkWinOrGale() {
 				CHAT_ID,
 				message: "✅ *WIN no 1º GALE!* 🔵",
 			});
-			signals.pop();
-			fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+			LAST_SIGNAL = null;
 			return;
 		}
 	}
@@ -105,8 +96,7 @@ async function checkWinOrGale() {
 				CHAT_ID,
 				message: "✅ *WIN no 2º GALE!* 🔴",
 			});
-			signals.pop();
-			fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+			LAST_SIGNAL = null;
 			return;
 		}
 	}
@@ -135,10 +125,10 @@ async function checkWinOrGale() {
 			CHAT_ID,
 			message: "❌ *LOSS!* 🔴",
 		});
-		signals.pop();
-		fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
+		LAST_SIGNAL = null;
 	}
 }
+
 async function getPrice(symbol) {
 	try {
 		const response = await axios.get(
@@ -153,7 +143,6 @@ async function getPrice(symbol) {
 
 function formatTime(date) {
 	const options = { timeZone: "America/Sao_Paulo", hour12: false };
-
 	return new Intl.DateTimeFormat("pt-BR", {
 		...options,
 		hour: "2-digit",
@@ -163,7 +152,6 @@ function formatTime(date) {
 
 function generateExpirationTimes() {
 	const now = new Date();
-
 	const expiration = new Date(now.getTime() + 5 * 60000);
 	const gale1 = new Date(expiration.getTime() + 5 * 60000);
 	const gale2 = new Date(gale1.getTime() + 5 * 60000);
@@ -178,20 +166,16 @@ function generateExpirationTimes() {
 async function sendTradeSignal() {
 	try {
 		const symbols = await getAllSymbols();
-
 		if (symbols.length === 0) return;
 
 		const type = Math.random() > 0.5 ? "PUT" : "CALL";
-
 		const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-
 		const price = await getPrice(randomSymbol);
-
 		if (!price) return;
 
 		const times = generateExpirationTimes();
 
-		const signal = {
+		LAST_SIGNAL = {
 			symbol: randomSymbol,
 			price: price,
 			type,
@@ -207,16 +191,6 @@ async function sendTradeSignal() {
 				expiration: times.gale2,
 			},
 		};
-
-		let signals = [];
-
-		if (fs.existsSync(FILE_PATH)) {
-			signals = JSON.parse(fs.readFileSync(FILE_PATH, "utf8"));
-		}
-
-		signals.push(signal);
-
-		fs.writeFileSync(FILE_PATH, JSON.stringify(signals, null, 2));
 
 		const message = `
 💰 *5 minutos de expiração*
@@ -272,5 +246,4 @@ APP.get("/check-win-or-gale", async (_, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
 APP.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
