@@ -11,8 +11,6 @@ const FILE_PATH = "./data/signals.json";
 
 const APP = express();
 
-
-
 async function sendTelegramMessage({ BOT_TOKEN, CHAT_ID, message }) {
 	const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
@@ -26,7 +24,7 @@ async function sendTelegramMessage({ BOT_TOKEN, CHAT_ID, message }) {
 async function getAllSymbols() {
 	try {
 		const response = await axios.get(
-			"https://api.binance.com/api/v3/exchangeInfo",
+			"https://data-api.binance.vision/api/v3/exchangeInfo",
 		);
 
 		const symbols = response.data.symbols
@@ -96,7 +94,7 @@ async function checkWinOrGale() {
 async function getPrice(symbol) {
 	try {
 		const response = await axios.get(
-			`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
+			`https://data-api.binance.vision/api/v3/ticker/price?symbol=${symbol}`,
 		);
 		return response.data.price;
 	} catch (error) {
