@@ -72,7 +72,7 @@ async function checkWinOrGale() {
 			await sendTelegramMessage({
 				BOT_TOKEN,
 				CHAT_ID,
-				message: "✅ *WIN no 1º GALE!* 🔵",
+				message: "✅ *WIN NO GALE!* 🔵",
 			});
 			LAST_SIGNAL = null;
 
@@ -97,7 +97,7 @@ async function checkWinOrGale() {
 			await sendTelegramMessage({
 				BOT_TOKEN,
 				CHAT_ID,
-				message: "✅ *WIN no 2º GALE!* 🔴",
+				message: "✅ *WIN NO GALE!* 🔴",
 			});
 			LAST_SIGNAL = null;
 
@@ -107,7 +107,7 @@ async function checkWinOrGale() {
 
 	const random = Math.random() * 100;
 
-	if (random < 50) {
+	if (random < 20) {
 		await sendTelegramMessage({
 			BOT_TOKEN,
 			CHAT_ID,
@@ -115,13 +115,15 @@ async function checkWinOrGale() {
 		});
 
 		LAST_SIGNAL = null;
-	} else {
-		await sendTelegramMessage({
-			BOT_TOKEN,
-			CHAT_ID,
-			message: "✅ *WIN NO GALE!* 🔴",
-		});
 	}
+
+	await sendTelegramMessage({
+		BOT_TOKEN,
+		CHAT_ID,
+		message: "✅ *WIN NO GALE!* 🔴",
+	});
+
+	LAST_SIGNAL = null;
 }
 
 async function getPrice(symbol) {
