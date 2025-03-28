@@ -37,7 +37,9 @@ async function checkWinOrGale() {
 	if (!LAST_SIGNAL) return;
 
 	const lastSignal = LAST_SIGNAL;
+    
 	const currentPrice = await getPrice(lastSignal.symbol);
+
 	if (!currentPrice) return;
 
 	if (
@@ -101,30 +103,15 @@ async function checkWinOrGale() {
 		}
 	}
 
-	const signalExpired =
-		new Date() >
-		new Date(
-			`${new Date().toISOString().split("T")[0]} ${lastSignal.expiration}:00`,
-		);
-	const gale1Expired = lastSignal.gale1
-		? new Date() >
-			new Date(
-				`${new Date().toISOString().split("T")[0]} ${lastSignal.gale1.expiration}:00`,
-			)
-		: true;
-	const gale2Expired = lastSignal.gale2
-		? new Date() >
-			new Date(
-				`${new Date().toISOString().split("T")[0]} ${lastSignal.gale2.expiration}:00`,
-			)
-		: true;
+    const random = Math.random() * 100;
 
-	if (signalExpired && gale1Expired && gale2Expired) {
+	if (random < 50) {
 		await sendTelegramMessage({
 			BOT_TOKEN,
 			CHAT_ID,
 			message: "❌ *LOSS!* 🔴",
 		});
+
 		LAST_SIGNAL = null;
 	}
 }
