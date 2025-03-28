@@ -37,7 +37,7 @@ async function checkWinOrGale() {
 	if (!LAST_SIGNAL) return;
 
 	const lastSignal = LAST_SIGNAL;
-    
+
 	const currentPrice = await getPrice(lastSignal.symbol);
 
 	if (!currentPrice) return;
@@ -75,6 +75,7 @@ async function checkWinOrGale() {
 				message: "✅ *WIN no 1º GALE!* 🔵",
 			});
 			LAST_SIGNAL = null;
+
 			return;
 		}
 	}
@@ -99,11 +100,12 @@ async function checkWinOrGale() {
 				message: "✅ *WIN no 2º GALE!* 🔴",
 			});
 			LAST_SIGNAL = null;
+
 			return;
 		}
 	}
 
-    const random = Math.random() * 100;
+	const random = Math.random() * 100;
 
 	if (random < 50) {
 		await sendTelegramMessage({
@@ -113,6 +115,12 @@ async function checkWinOrGale() {
 		});
 
 		LAST_SIGNAL = null;
+	} else {
+		await sendTelegramMessage({
+			BOT_TOKEN,
+			CHAT_ID,
+			message: "✅ *WIN NO GALE!* 🔴",
+		});
 	}
 }
 
